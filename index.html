@@ -479,30 +479,32 @@
                 showCover: true, isOpened: false, curtainOpen: false, 
                 isPlaying: false, guestName: 'Tamu Undangan',
                 activeSlide: 0,
+                // Foto untuk slider
                 sliderImages: ['assets/images/1.jpeg', 'assets/images/2.jpeg', 'assets/images/3.jpeg', 'assets/images/4.jpeg', 'assets/images/5.jpeg', 'assets/images/20.jpeg'],
                 form: { nama: '', kehadiran: 'Hadir', ucapan: '' }, 
                 isLoading: false,
                 lightboxOpen: false, lightboxImg: '',
                 countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
-                
-                // --- TAMBAHAN UNTUK GOOGLE SHEETS ---
+
+                // Variabel untuk menampung data dari Google Sheets
                 ucapanList: [],
-                scriptURL: 'https://script.google.com/macros/s/AKfycbytoiFpTQ2BI1uCCAuV8ueFhlTwBMqdH-oOH0iDSJFk2Wlq1e0D2vM3oZSPHHjqRc9-/exec', // <-- PASTE URL SCRIPT DI SINI
+                // URL WEB APP GOOGLE SCRIPT KAMU
+                scriptURL: 'https://script.google.com/macros/s/AKfycbytoiFpTQ2BI1uCCAuV8ueFhlTwBMqdH-oOH0iDSJFk2Wlq1e0D2vM3oZSPHHjqRc9-/exec',
 
                 init() {
                     const params = new URLSearchParams(window.location.search);
-                    if (params.get('to')) this.guestName = params.get('to');
+                    if (params.get('to')) {
+                        this.guestName = params.get('to');
+                        // BIKIN NAMA OTOMATIS MUNCUL DI FORM BUKU TAMU
+                        this.form.nama = params.get('to');
+                    }
 
                     setTimeout(() => {
                         this.pageLoading = false;
                     }, 300);
 
                     this.startCountdown();
-                    
-                    // Tarik data ucapan saat web pertama dibuka
-                    if(this.scriptURL !== 'https://script.google.com/macros/s/AKfycbytoiFpTQ2BI1uCCAuV8ueFhlTwBMqdH-oOH0iDSJFk2Wlq1e0D2vM3oZSPHHjqRc9-/exec') {
-                        this.getUcapan(); 
-                    }
+                    this.getUcapan(); // Tarik data ucapan saat web pertama dibuka
                 },
 
                 // Fungsi menarik data dari Google Sheets
@@ -583,7 +585,7 @@
                         customClass: { popup: 'rounded-none border-[3px] border-[#e5b85c]' }
                     });
                 },
-                
+
                 submitForm() {
                     this.isLoading = true;
                     
@@ -603,22 +605,19 @@
                                 color: '#e5b85c', 
                                 background: '#fdf5e6'
                             });
-                            // Reset form
-                            this.form.nama = '';
+                            
+                            // Reset form (kecuali namanya biarin tetep terisi kalau ada di URL)
+                            this.form.nama = this.guestName !== 'Tamu Undangan' ? this.guestName : '';
                             this.form.ucapan = '';
                             this.form.kehadiran = 'Hadir';
                             
-                            // Tarik data lagi biar ucapan barunya langsung muncul
-                            this.getUcapan();
+                            // Tarik ulang data agar ucapan yang baru dikirim langsung muncul di layar
+                            this.getUcapan(); 
                         })
                         .catch(error => {
                             this.isLoading = false;
-                            Swal.fire({
-                                title: 'Gagal!', 
-                                text: 'Maaf, ucapan gagal dikirim.', 
-                                icon: 'error'
-                            });
-                            console.error('Error!', error.message);
+                            Swal.fire({ title: 'Gagal!', text: 'Maaf, ucapan gagal dikirim.', icon: 'error' });
+                            console.error('Error!', error);
                         });
                 }
             }))
